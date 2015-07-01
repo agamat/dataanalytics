@@ -1,0 +1,72 @@
+stevens <- read.csv("stevens.csv") #Read csv file
+str(stevens)
+set.seed(3000) #Set seed so everyone gets same value
+spl <- sample.split(stevens$Reverse, SplitRatio=0.7) #Split data into two parts 
+train <- subset(stevens, spl==TRUE) #70% data in training set
+test <- subset(stevens, spl==FALSE) #30% data in testing set
+library(rpart)
+library(rpart.plot)
+
+#Getting CART model using all variables
+stevenstree <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class", minbucket=25)
+prp(stevenstree) #Plot CART
+predictcart <- predict(stevenstree, newdata=test, type="class") #Predict CART model
+table(test$Reverse, predictcart)
+accuracy <- (41+71)/(41+71+58) #Check accuracy of prediction
+predictroc <- predict(stevenstree, newdata=test) #Predict ROC model
+pred <- prediction(predictroc[,2], test$Reverse)
+perf <- performance(pred, "tpr", "fpr") #Plot ROC model
+plot(perf)
+as.numeric(performance(pred, "auc")@y.values)
+
+#Get rpart model using minbucket = 5. Overfittiing occurs
+stevenstree1 <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class", minbucket=5)
+prp(stevenstree1)
+
+#Get rpart model using minbucket = 100. Output is oversimplified
+stevenstree2 <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class", minbucket=100)
+prp(stevenstree2)
+library(randomForest)
+
+#Get Random Forest model with number of trees = 200
+stevensforest <- randomForest(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, nodesize=25, ntree=200)
+train$Reverse <- as.factor(train$Reverse)
+test$Reverse <- as.factor(test$Reverse)
+stevensforest <- randomForest(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, nodesize=25, ntree=200)
+predictforest <- predict(stevensforest, newdata=test)
+table(test$Reverse, predictforest)
+accuracy <- (40+74)/(114+56) #Accuracy of Random Forest prediction
+set.seed(100)
+stevensforest1 <- randomForest(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, nodesize=25, ntree=200)
+predictforest <- predict(stevensforest1, newdata=test)
+predictforest1 <- predict(stevensforest1, newdata=test)
+table(test$Reverse, predictforest1)
+(43+74)/(43+74+53)
+set.seed(200)
+stevensforest1 <- randomForest(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, nodesize=25, ntree=200)
+predictforest1 <- predict(stevensforest1, newdata=test)
+table(test$Reverse, predictforest1)
+(44+76)/(44+76+50)
+library(caret)
+library(e1071)
+numfolds <- trainControl(method="cv", number=10)
+crgrid <- expand.grid(.cp=seq(0.01,0.5,0.01)
+)
+train(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="rpart", trControl=numfolds, tuneGrid=cpGrid)
+train(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="rpart", trControl=numfolds, tuneGrid=cpgrid)
+train(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="rpart", trControl=numfolds, tuneGrid=crgrid)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class" cp=0.02)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class" cp=0.18)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=Train, method="class" cp=0.18)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=Train, method="class", cp=0.02)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class", cp=0.02)
+predictcv <- predict(stevenstreecv, newdata=test, type="class")
+table(test$Reverse, predictcv)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class", cp=0.0)
+stevenstreecv <- rpart(Reverse ~ Circuit+Issue+Petitioner+Respondent+LowerCourt+Unconst, data=train, method="class", cp=0.18)
+predictcv <- predict(stevenstreecv, newdata=test, type="class")
+table(test$Reverse, predictcv)
+prp(predictcv)
+prp(stevenstreecv)
+prp(stevenstreecv)
+
