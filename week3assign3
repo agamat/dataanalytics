@@ -60,4 +60,4 @@ selectedloans <- subset(highinterest, predicted.risk <= cutoff)
 summary(selectedloans)
 sum(selectedloans$profit)
 table(selectedloans$not.fully.paid)
-accuracy <- 18/100
+accuracy <- 18/100 #measure accuracy of predicted results
