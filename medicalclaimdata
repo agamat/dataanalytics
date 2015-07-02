@@ -1,1 +1,4 @@
+#Read data into R
+claims <- read,csv("ClaimsData.csv")
+
 
