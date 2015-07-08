@@ -1,0 +1,61 @@
+boston <- read.csv("boston.csv") #Read data
+latlonlm <- lm(MEDV ~ LAT+LON, data=boston) #Run linear regression
+plot(boston$LON, boston$LAT)
+points(boston$LON[boston$MEDV >= 21.2], boston$LAT[boston$MEDV >= 21.2], col="red", pch=19)
+
+#Check for fitted lines for best fit line
+latlonlm$fitted.values
+
+#Plot graph which delineates the areas where best fit line is more than median
+points(boston$LON[latlonlm$fitted.values >= 21.2], boston$LAT[latlonlm$fitted.values >= 21.2], col="blue", pch="$")
+library(rpart)
+library(rpart.plot)
+latlontree <- rpart(MEDV ~ LAT+LON, data=boston) #Run CART
+prp(latlontree)
+plot(boston$LON, boston$LAT)
+points(boston$LON[boston$MEDV >= 21.2], boston$LAT[boston$MEDV >= 21.2], col="red", pch=19)
+
+#Predict CART model
+fittedvalues <- predict(latlontree)
+points(boston$LON[boston$fittedvalues >= 21.2], boston$LAT[boston$fittedvalues >= 21.2], col="blue", pch="$")
+points(boston$LON[fittedvalues >= 21.2], boston$LAT[fittedvalues >= 21.2], col="blue", pch="$")
+
+#New CART model with minbucket
+newtree <- rpart(MEDV ~ LAT+LON, data=boston, minbucket=50)
+plot(newtree)
+prp(newtree)
+text(newtree)
+library(caTools)
+set.seed(123)
+split <- sample.split(boston$MEDV, SplitRatio=0.7) #Split data into testing and training set
+train <- subset(boston, split == TRUE)
+test <- subset(boston, split == FALSE)
+
+#Run linear regression with all variables
+linreg <- lm(MEDV ~ LAT+LON+CRIM+ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO, data=train)
+summary(linreg)
+
+#Predict linear model
+linregpred <- predict(linreg, newdata=test)
+ #Calculate SSE
+linreg.sse <- sum((linregpred - test$MEDV)^2)
+
+#Create CART model 
+tree <- rpart(MEDV ~ LAT+LON+CRIM+ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO, data=train)
+prp(tree)
+
+#Predict CART model
+tree.pred <- predict(tree, newdata=test)
+tree.sse <- sum((tree.pred - test$MEDV)^2)
+
+#Calculate cp value (minbucket used in CART models)
+library(caret)
+library(e1071)
+tr.control <- trainControl(method="cv",number=10) 
+
+cp.grid <- expand.grid(.cp = (0:10)*0.001)
+tr <- train(MEDV ~ LAT+LON+CRIM+ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO, data=train, method = "rpart", trControl = tr.control, tuneGrid = cp.grid)
+tr
+best.tree <- tr$finalModel
+prp(best.tree) #Plot the CART model with best cp value
+best.tree.pred <- predict(best.tree, newdata=test)
