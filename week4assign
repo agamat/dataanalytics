@@ -1,26 +1,19 @@
-gerber <- read.csv("gerber.csv")
-str(gerber)
+#Read .csv file
+gerber <- read.csv("gerber.csv") 
+
+#Calculate baseline model
 table(gerber$voting)
 108696/344084
-table(gerber$voting, gerber$civicduty)
-table(gerber$civisduty)
-table(gerber$civicduty)
-12021/96675
-table(gerber$voting, gerber$hawthorne)
-12316/(12316+96380)
-12021/(96675+12021)
-table(gerber$voting, gerber$self)
-13191/(13191+95505)
-table(gerber$voting, gerber$neighbors)
-14438/(94258+14438)
+
+#Create linear model
 lm1 <- lm(voting ~ hawthorne+self+neighbors+civicduty, data=gerber)
-rm(lm)
-lm1 <- lm(voting ~ hawthorne+self+neighbors+civicduty, data=gerber)
-summary(lm1)
+
+#Predict linear model and calculate prediction accuracy
 predlm1 <- predict(lm1)
 table(gerber$voting, predlm1)
-lm1 <- lm(voting ~ hawthorne+self+neighbors+civicduty, data=gerber, family=binomial)
-summary(lm1)
+
+#Create another linear model
+lm2 <- lm(voting ~ hawthorne+self+neighbors+civicduty, data=gerber, family=binomial)
 predlm1 <- predict(lm1, type="response")
 table(gerber$voting, predlm1>=0.3)
 (134513+51966)/(134513+51966+56730+100875)
@@ -58,47 +51,65 @@ predict(lm4, newdata=possibilities, type="response")
 glm1 = glm(voting ~ sex + control + sex:control, data=gerber, family="binomial")
 summary(glm1)
 predict(glm1, newdata=possibilities, type="response")
-letters <- read.csv(letters_ABPR.csv")
+
+#PROBLEM NO. 2
+
+#Read data and create new variable
 letters <- read.csv("letters_ABPR.csv")
 letters$isB = as.factor(letters$letter == "B")
+
+#Split data into testing and training set
 set.seed(1000)
-split <- sample.split(letter$isB, SplitRatio=0.5)
 library(caTools)
-split <- sample.split(letter$isB, SplitRatio=0.5)
 split <- sample.split(letters$isB, SplitRatio=0.5)
 train <- subset(letters, split==TRUE)
 test <- subset(letters, split==FALSE)
+
+#Check baseline model accuracy
 table(letters$isB)
 2350/(2350+766)
+
+#Create CART model
 cartb = rpart(isB ~ . - letter, data=train, method="class")
 pred <- predict(cartb, newdata=test, type="class")
+
+#Check model accuracy
 table(test$letters$isB, pred)
 table(test$isB, pred)
 (340+1118)/(340+1118+100)
-set.seed(1000)
-forestb = randomforest(isB ~ . - letter, data=train)
-library(randomForest)
+
+#Create Random Forest model
 set.seed(1000)
 forestb = randomforest(isB ~ . - letter, data=train)
 forestb = randomForest(isB ~ . - letter, data=train)
 predforest <- predict(forestb, newdata=test)
+
+#Check model
 table(test$isB, predforest)
 (374+1165)/(374+1165+19)
 letters$letter = as.factor( letters$letter ) 
+
+#Split data into training and testing set
 set.seed(2000)
 split <- sample.split(letters$letter, SplitRatio=0.5)
 train <- subset(letters, split==TRUE)
 test <- subset(letters, split==FALSE)
-table(letters$letter
-)
-summary(test)
+
+#Check baseline model accuracy
+table(letters$letter)
 401/nrow(test)
+
+#Create CART model
 cartletter = rpart(letter ~ . - isB, data=train, method="class")
 predictcart <- predict(cartletter, newdata=test, type="class")
 table(test$letter, predictcart)
 (348+318+363+340)/nrow(test)
+
+#Create Random Forest model
 forestletter = randomForest(letter ~ . - isB, data=train, method="class")
 forestletter = randomForest(letter ~ . - isB, data=train)
 predictforest <- predict(forestletter, newdata=test)
+
+#Check prediction accuracy
 table(test$letter, predictforest)
-(390+379+393+367)/nrow(test)
+(390+379+393+367)/nrow(test) 
