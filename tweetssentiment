@@ -1,20 +1,68 @@
 tweets <- read.csv("tweets.csv", stringsAsFactors=FALSE)
 library(tm)
-library(SnowballC))
 library(SnowballC)
-corpus <- Corpus(VectorSource(tweest$Tweet))
+
+#Prepare the data and clean the irregularities
 corpus <- Corpus(VectorSource(tweets$Tweet))
-corpus <- tm_map(corpus, tolower)
+corpus <- tm_map(corpus, tolower) #Conver all letters to lower case
 corpus[[1]]
-corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removePunctuation) #Remove all punctuations
 corpus[[1]]
-corpus <- tm_map(corpus, removeWords, c("apple", stopwords("english")))
+corpus <- tm_map(corpus, removeWords, c("apple", stopwords("english"))) #Remove stopwords
 corpus[[1]]
-corpus <- tm_map(corpus, stemDocument)
+corpus <- tm_map(corpus, stemDocument) #Stem the document
 corpus[[1]]
-frequencies <- DocumentTermMatrix(corpus)
-corpus <- tm_map(corpus, PlainTextDocument)
-frequencies <- DocumentTermMatrix(corpus)
+corpus <- tm_map(corpus, PlainTextDocument) #Convert corpus to plain text document
+frequencies <- DocumentTermMatrix(corpus) #Convert corpus into data matrix
 frequencies
-inspect(frequencies[1000:1005, 505:515])
+inspect(frequencies[1000:1005, 505:515]) 
+
+#Find words that appear atleast 20 times
 findFreqTerms(frequencies, lowfreq=20)
+
+#Remove words that don't appear in 0.5% of the data
+sparse <- removeSparseTerms(frequencies, 0.995)
+sparse
+
+
+
+
+#Convert to data frame
+tweetssparse <- as.data.frame(as.matrix(sparse))
+
+#Convert column names from numbers to characters
+colnames(tweets$sparse) <- make.names(colnames(tweets$sparse))
+tweets$Negative <- as.factor(tweets$Avg <= -1)
+tweetssparse$Negative <- tweets$Negative
+
+#Make CART model and check accuracy of predictions
+library(caTools)
+set.seed(123)
+split <- sample.split(tweetssparse$Negative, SplitRatio=0.7)
+train <- subset(tweetssparse, split==TRUE)
+test <- subset(tweetssparse, split==FALSE)
+findFreqTerms(frequencies, lowfreq=100)
+library(rpart)
+library(rpart.plot)
+tweetcart <- rpart(Negative ~ ., data=train, method="class")
+prp(tweetcart)
+predictcart <- predict(tweetcart, newdata=test, type="class")
+table(testsparse$Negative, predictcart)
+table(test$Negative, predictcart)
+
+#Make random forest model and check accuracy of predictions
+library(randomForest)
+set.seed(123)
+tweetrf <- randomForest(Negative ~ ., data=train)
+predictrf <- predict(tweetrf, newdata=test)
+table(testsparse$Negative, predictrf)
+table(tests$Negative, predictrf)
+
+#Make logictic regression model and make predictions
+lm1 <- glm(Negative ~ ., data=train, family=binomial)
+predictions <- predict(lm1, newdata=test, stype="response")
+table(test$Negative, test$predictions)
+table(test$Negative, test$predictions>0.5)
+table(test$Negative, train$predictions>0.5)
+predictions <- predict(lm1, newdata=test, type="response")
+table(test$Negative, test$predictions>0.5)
