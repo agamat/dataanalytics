@@ -1,0 +1,20 @@
+tweets <- read.csv("tweets.csv", stringsAsFactors=FALSE)
+library(tm)
+library(SnowballC))
+library(SnowballC)
+corpus <- Corpus(VectorSource(tweest$Tweet))
+corpus <- Corpus(VectorSource(tweets$Tweet))
+corpus <- tm_map(corpus, tolower)
+corpus[[1]]
+corpus <- tm_map(corpus, removePunctuation)
+corpus[[1]]
+corpus <- tm_map(corpus, removeWords, c("apple", stopwords("english")))
+corpus[[1]]
+corpus <- tm_map(corpus, stemDocument)
+corpus[[1]]
+frequencies <- DocumentTermMatrix(corpus)
+corpus <- tm_map(corpus, PlainTextDocument)
+frequencies <- DocumentTermMatrix(corpus)
+frequencies
+inspect(frequencies[1000:1005, 505:515])
+findFreqTerms(frequencies, lowfreq=20)
