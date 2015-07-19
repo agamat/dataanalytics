@@ -1,0 +1,12 @@
+movies <- read.table("movielens.txt", header=FALSE, sep="|", quote="\"")
+str(movies
+)
+colnames(movies) <- c("ID", "Title", "ReleaseDate", "IMDB", "Unknown", "Action", "Adventure", "Animation", "Childrens", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "FilmNoir", "Horror", "Musical", "Mystery", "Romance", "SciFi", "Thriller", "War", "Western")
+)
+str(movies)
+movies$ID = NULL
+movies$ReleaseDate = NULL
+movies$VideoReleaseDate = NULL
+movies$IMDB = NULL
+movies <- unique(movies)
+history(Inf)
