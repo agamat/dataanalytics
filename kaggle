@@ -1,0 +1,15 @@
+corpusheadline <- Corpus(VectorSource(c(train$Headline, test$Headline)))
+> corpusheadline <- tm_map(corpusheadline, tolower)
+> corpusheadline <- tm_map(corpusheadline, PlainTextDocument)
+> corpusheadline <- tm_map(corpusheadline, removePunctuation)
+> corpusheadline <- tm_map(corpusheadline, removeWords, stopwords("english"))
+> corpusheadline <- tm_map(corpusheadline, stemDocument)
+> dtm <- DocumentTermMatrix(corpusheadline)
+> sparse <- removeSparseTerms(dtm, 0.95)
+> headlinewords <- as.data.frame(as.matrix(sparse))
+> colnames(headlinewords) <- make.names(colnames(headlinewords))
+> headlinewordstrain <- head(headlinewords, nrow(train))
+> headlinewordstest <- head(headlinewords, nrow(test))
+> headlinewordstrain$Popular <- train$Popular
+> headlinewordstrain$WordCount <- train$WordCount
+> headlinewordstest$WordCount <- test$WordCount
